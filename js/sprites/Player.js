@@ -46,7 +46,7 @@ class Player extends Sprite {
             console.error("Failed to load Player.jpg!");
             this.spriteSheet = null;
         };
-        this.spriteSheet.src = '../../images/Player/Player.png';
+        this.spriteSheet.src = '../../assets/Player/Player.png';
     }
 
     setupAnimation() {

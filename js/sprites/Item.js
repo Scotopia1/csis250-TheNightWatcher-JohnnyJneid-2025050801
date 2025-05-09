@@ -90,6 +90,15 @@ class Item extends Sprite {
             default:
                 console.warn(`Unknown item type collected: ${this.itemType}`);
         }
+        const file = '../../assets/Items/collected.wav';
+        const audio = new Audio(file);
+        audio.play().then(() => {
+                console.log("Audio played successfully.");
+            }
+        ).catch((error) => {
+                console.error("Error playing audio:", error);
+            }
+        )
     }
 
     draw(ctx) {

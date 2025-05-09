@@ -38,7 +38,7 @@ class Projectile extends Sprite {
             console.error(`Failed to load sprite sheet 'bullets+plasma.png' for projectile at (${this.x}, ${this.y})`);
             this.spriteSheet = null;
         };
-        this.spriteSheet.src = '../../images/Projectiles/bullets+plasma.png';
+        this.spriteSheet.src = '../../assets/Projectiles/bullets+plasma.png';
 
         const dx = targetX - startX; const dy = targetY - startY;
         const distance = Math.sqrt(dx * dx + dy * dy);
