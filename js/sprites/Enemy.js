@@ -1,3 +1,12 @@
+/******************************************************************
+ * Enemy.js
+ *
+ * This file contains the Enemy class, which represents an enemy
+ * character in the game. The enemy can patrol, chase the player,
+ * and shoot projectiles. It also has a vision cone to detect
+ * the player.
+ *
+ */
 class Enemy extends Sprite {
     constructor(game, x, y, size = 32, color = 'red', speed = 1, patrolDistance = 100, health = 50, visionRange = 250, visionAngleDegrees = 80) {
         super();
@@ -49,10 +58,10 @@ class Enemy extends Sprite {
         this.FRAMES_PER_WALK = 4;
         this.NUM_DIRECTIONS = 8;
         this.deathAnimationFrames = 3;
-        this.deathAnimationRows = [14, 15]; // Assuming these are correct for your sheet
+        this.deathAnimationRows = [14, 15];
 
-        this.dx_memory = 0; // For animation tracking
-        this.dy_memory = 0; // For animation tracking
+        this.dx_memory = 0;
+        this.dy_memory = 0;
 
 
         this.loadSpriteSheet();
@@ -62,13 +71,13 @@ class Enemy extends Sprite {
         this.spriteSheet.onload = () => {
             this.isSheetLoaded = true;
             this.setupAnimations();
-            this.updateAnimation(); // Initial animation setup
+            this.updateAnimation();
         };
         this.spriteSheet.onerror = () => {
             console.error(`Failed to load sprite sheet 'Centipede.png' for enemy at (${this.x}, ${this.y})`);
             this.spriteSheet = null;
         };
-        this.spriteSheet.src = '../../assets/Player/Centipede.png'; // Ensure path is correct
+        this.spriteSheet.src = '../../assets/Player/Centipede.png';
     }
 
     setupAnimations() {
@@ -89,7 +98,6 @@ class Enemy extends Sprite {
                 let frames = [];
                 let spriteSheetRow = i;
                 if (stateName === 'death') {
-                    // Ensure we don't go out of bounds for deathAnimationRows
                     spriteSheetRow = this.deathAnimationRows[i % this.deathAnimationRows.length];
                 }
 
@@ -109,15 +117,13 @@ class Enemy extends Sprite {
     getDirectionIndex(angleRadians) {
         let angle = normalizeAngle(angleRadians);
         const PI = Math.PI;
-        if (angle >= (15 * PI / 8) || angle < (PI / 8)) return 0; // E
-        if (angle >= (PI / 8) && angle < (3 * PI / 8)) return 1;   // SE
-        if (angle >= (3 * PI / 8) && angle < (5 * PI / 8)) return 2;   // S
-        if (angle >= (5 * PI / 8) && angle < (7 * PI / 8)) return 3;   // SW
-        if (angle >= (7 * PI / 8) && angle < (9 * PI / 8)) return 4;   // W
-        if (angle >= (9 * PI / 8) && angle < (11 * PI / 8)) return 5;  // NW
-        if (angle >= (11 * PI / 8) && angle < (13 * PI / 8)) return 6;  // N
-        if (angle >= (13 * PI / 8) && angle < (15 * PI / 8)) return 7;  // NE
-        return 0; // Default
+        if (angle >= (15 * PI / 8) || angle < (PI / 8)) return 0;
+        if (angle >= (PI / 8) && angle < (3 * PI / 8)) return 1;
+        if (angle >= (3 * PI / 8) && angle < (5 * PI / 8)) return 2;
+        if (angle >= (5 * PI / 8) && angle < (7 * PI / 8)) return 3;
+        if (angle >= (11 * PI / 8) && angle < (13 * PI / 8)) return 6;
+        if (angle >= (13 * PI / 8) && angle < (15 * PI / 8)) return 7;
+        return 0;
     }
 
     updateAnimation() {
@@ -140,7 +146,7 @@ class Enemy extends Sprite {
 
         if (targetAnimator) {
             if (this.animator !== targetAnimator) {
-                if(this.animator) this.animator.pause(); // Pause previous animator
+                if (this.animator) this.animator.pause();
                 this.animator = targetAnimator;
                 this.animator.reset();
                 this.animator.play();
@@ -158,12 +164,12 @@ class Enemy extends Sprite {
                     this.animator.play();
                 } else {
                     this.animator.pause();
-                    this.animator.setFrame(0); // Reset to first frame when idle
+                    this.animator.setFrame(0);
                 }
-            } else { // For 'death' or other non-walk animations
+            } else {
                 this.animator.play();
             }
-            this.animator.update(); // Always update the current animator
+            this.animator.update();
         }
     }
 
@@ -172,17 +178,16 @@ class Enemy extends Sprite {
         return Math.random() * (this.maxPatrolTurnInterval - this.minPatrolTurnInterval) + this.minPatrolTurnInterval;
     }
 
-    update(sprites, keys, mouse, game) { // game parameter is added
+    update(sprites, keys, mouse, game) {
         if (this.state === 'dead') {
             if (this.animator && this.animator.isPlaying) {
                 this.animator.update();
             }
-            // Removal is handled by game.js based on animator.isPlaying for death animation
             return !this.animator || !this.animator.isPlaying;
         }
 
-        this.dx_memory = 0; // Reset before movement
-        this.dy_memory = 0; // Reset before movement
+        this.dx_memory = 0;
+        this.dy_memory = 0;
 
 
         if (this.hitTimer > 0) this.hitTimer--;
@@ -202,15 +207,15 @@ class Enemy extends Sprite {
                 }
                 if (canSeePlayer && this.targetPlayer) {
                     this.state = 'chasing';
-                    this.lastKnownPlayerX = this.targetPlayer.x + this.targetPlayer.width / 2; // Center of player
-                    this.lastKnownPlayerY = this.targetPlayer.y + this.targetPlayer.height / 2; // Center of player
+                    this.lastKnownPlayerX = this.targetPlayer.x + this.targetPlayer.width / 2;
+                    this.lastKnownPlayerY = this.targetPlayer.y + this.targetPlayer.height / 2;
                 } else {
                     this.patrol(sprites, attemptRandomTurn);
                 }
                 break;
             case 'chasing':
                 this.color = 'darkorange';
-                this.patrolTurnTimer = this.getRandomTurnInterval(); // Reset timer
+                this.patrolTurnTimer = this.getRandomTurnInterval();
                 if (canSeePlayer && this.targetPlayer) {
                     this.lastKnownPlayerX = this.targetPlayer.x + this.targetPlayer.width / 2;
                     this.lastKnownPlayerY = this.targetPlayer.y + this.targetPlayer.height / 2;
@@ -223,7 +228,6 @@ class Enemy extends Sprite {
                     if (distanceToPlayer > this.preferredDistance) {
                         this.moveTowards(this.lastKnownPlayerX, this.lastKnownPlayerY, sprites, this.speed * this.chaseSpeedMultiplier);
                     } else {
-                        // Too close, maybe stop or shoot
                         if (this.fireCooldown <= 0) {
                             this.shoot(this.lastKnownPlayerX, this.lastKnownPlayerY);
                             this.fireCooldown = this.fireRate;
@@ -235,7 +239,7 @@ class Enemy extends Sprite {
                 break;
             case 'returning':
                 this.color = 'gold';
-                this.patrolTurnTimer = this.getRandomTurnInterval(); // Reset timer
+                this.patrolTurnTimer = this.getRandomTurnInterval();
                 if (canSeePlayer && this.targetPlayer) {
                     this.state = 'chasing';
                     this.lastKnownPlayerX = this.targetPlayer.x + this.targetPlayer.width / 2;
@@ -247,7 +251,7 @@ class Enemy extends Sprite {
                         this.state = 'patrolling';
                     }
                 } else {
-                    this.state = 'patrolling'; // Should not happen if lastKnown is set
+                    this.state = 'patrolling';
                 }
                 break;
         }
@@ -256,7 +260,7 @@ class Enemy extends Sprite {
             this.die();
         }
         this.updateAnimation();
-        return false; // Let game.js handle removal after death animation
+        return false;
     }
 
     moveTowards(targetX, targetY, sprites, speed) {
@@ -268,11 +272,11 @@ class Enemy extends Sprite {
         let dy = Math.sin(angleToTarget) * speed;
 
         const distanceToTarget = calculateDistance(enemyCenterX, enemyCenterY, targetX, targetY);
-        if (distanceToTarget < speed) { // Don't overshoot
+        if (distanceToTarget < speed) {
             dx = targetX - enemyCenterX;
             dy = targetY - enemyCenterY;
         }
-        this.dx_memory = dx; // Store actual movement for animation
+        this.dx_memory = dx;
         this.dy_memory = dy;
 
 
@@ -298,7 +302,7 @@ class Enemy extends Sprite {
 
 
         const newDistance = calculateDistance(this.x + this.width / 2, this.y + this.height / 2, targetX, targetY);
-        return newDistance < Math.max(this.width / 4, speed * 0.5); // Reached if very close
+        return newDistance < Math.max(this.width / 4, speed * 0.5);
     }
 
 
@@ -311,7 +315,7 @@ class Enemy extends Sprite {
         const dx = Math.cos(this.currentFacingAngle) * this.speed;
         const dy = Math.sin(this.currentFacingAngle) * this.speed;
 
-        this.dx_memory = dx; // Store actual movement for animation
+        this.dx_memory = dx;
         this.dy_memory = dy;
 
         const nextX = this.x + dx;
@@ -331,10 +335,9 @@ class Enemy extends Sprite {
             this.x = nextX;
             this.y = nextY;
         } else {
-            // Turn around more intelligently, e.g., try a perpendicular turn or reverse
             this.currentFacingAngle = normalizeAngle(this.currentFacingAngle + Math.PI + (Math.random() - 0.5) * (Math.PI / 2));
-            this.patrolTurnTimer = this.getRandomTurnInterval(); // Reset timer on collision
-            this.dx_memory = 0; // No movement if collided
+            this.patrolTurnTimer = this.getRandomTurnInterval();
+            this.dx_memory = 0;
             this.dy_memory = 0;
         }
     }
@@ -361,45 +364,43 @@ class Enemy extends Sprite {
             return false;
         }
 
-        // Line of sight check
         for (const sprite of allSprites) {
             if (sprite.isWall) {
                 const box = sprite.getBoundingBox();
-                // Check intersection with all four edges of the wall
+
                 const edges = [
-                    { x1: box.x, y1: box.y, x2: box.x + box.width, y2: box.y }, // Top
-                    { x1: box.x, y1: box.y + box.height, x2: box.x + box.width, y2: box.y + box.height }, // Bottom
-                    { x1: box.x, y1: box.y, x2: box.x, y2: box.y + box.height }, // Left
-                    { x1: box.x + box.width, y1: box.y, x2: box.x + box.width, y2: box.y + box.height }  // Right
+                    {x1: box.x, y1: box.y, x2: box.x + box.width, y2: box.y},
+                    {x1: box.x, y1: box.y + box.height, x2: box.x + box.width, y2: box.y + box.height},
+                    {x1: box.x, y1: box.y, x2: box.x, y2: box.y + box.height},
+                    {x1: box.x + box.width, y1: box.y, x2: box.x + box.width, y2: box.y + box.height}
                 ];
                 for (const edge of edges) {
                     if (checkLineSegmentIntersection(enemyCenterX, enemyCenterY, playerCenterX, playerCenterY, edge.x1, edge.y1, edge.x2, edge.y2)) {
-                        return false; // Vision blocked by a wall
+                        return false;
                     }
                 }
             }
         }
-        return true; // Player is in cone and line of sight is clear
+        return true;
     }
 
     takeDamage(amount, source = null) {
         if (this.state === 'dead') return;
 
         this.health -= amount;
-        this.hitTimer = this.hitDuration; // For visual feedback
+        this.hitTimer = this.hitDuration;
 
         if ((this.state === 'patrolling' || this.state === 'returning') && source && source.x !== undefined && source.y !== undefined) {
             this.lastKnownPlayerX = source.x;
             this.lastKnownPlayerY = source.y;
-            this.state = 'returning'; // Or 'chasing' if you want immediate aggression
+            this.state = 'returning';
         } else if (this.state === 'patrolling') {
-            // If no source, or source isn't a sprite (e.g. trap), just become alert
-            this.state = 'chasing'; // Or some other alert state if player position unknown
+            this.state = 'chasing';
         }
     }
 
     die() {
-        if (this.state === 'dead') return; // Prevent multiple calls
+        if (this.state === 'dead') return;
 
         this.state = 'dead';
         this.speed = 0;
@@ -407,22 +408,18 @@ class Enemy extends Sprite {
         this.dy_memory = 0;
 
 
-        // Score is awarded in game.js when this enemy is processed for removal
-        // this.game.addScore(100); // Moved to game.js
-
         if (this.animations['death'] && this.animations['death'].length > 0) {
             const directionIndex = this.getDirectionIndex(this.currentFacingAngle);
-            // Ensure death animation exists for the direction, or use a default
             this.animator = this.animations['death'][directionIndex % this.animations['death'].length];
             if (this.animator) {
                 this.animator.reset();
                 this.animator.play();
                 this.animator.setOnComplete(() => {
-                    // The game loop will remove the sprite when animator.isPlaying is false
+                    this.animator.isPlaying = false;
+                    this.game.removeSprite(this);
                 });
             }
         } else {
-            // If no death animation, mark for immediate removal by stopping any current animation
             if(this.animator) this.animator.isPlaying = false;
         }
     }
@@ -437,28 +434,26 @@ class Enemy extends Sprite {
 
                 ctx.save();
                 ctx.translate(centerX, centerY);
-                // No rotation needed if using directional sprites
                 ctx.drawImage(
                     this.spriteSheet,
                     frame.x, frame.y, frame.w, frame.h,
-                    -this.drawWidth / 2, -this.drawHeight / 2, // Draw centered
+                    -this.drawWidth / 2, -this.drawHeight / 2,
                     this.drawWidth, this.drawHeight
                 );
                 ctx.restore();
             }
-        } else if (this.state !== 'dead') { // Fallback if sheet not loaded or no animator
+        } else if (this.state !== 'dead') {
             ctx.fillStyle = (this.hitTimer > 0 && this.hitTimer % 4 < 2) ? 'white' : this.color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
-        } else if (this.state === 'dead' && !this.isSheetLoaded) { // Fallback for dead if sheet fails
-            ctx.fillStyle = '#400000'; // Dark red for dead fallback
+        } else if (this.state === 'dead' && !this.isSheetLoaded) {
+            ctx.fillStyle = '#400000';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
 
 
-        // Draw vision cone and health bar only if not dead
         if (this.state !== 'dead') {
             this.drawVisionCone(ctx);
-            if (this.health < this.maxHealth) { // Only draw health bar if damaged
+            if (this.health < this.maxHealth) {
                 this.drawHealthBar(ctx);
             }
         }
@@ -468,14 +463,14 @@ class Enemy extends Sprite {
         const barWidth = this.width;
         const barHeight = 5;
         const barX = this.x;
-        const barY = this.y - barHeight - 2; // Position above the enemy
+        const barY = this.y - barHeight - 2;
 
         const healthRatio = Math.max(0, this.health / this.maxHealth);
 
-        ctx.fillStyle = '#555'; // Background of health bar
+        ctx.fillStyle = '#555';
         ctx.fillRect(barX, barY, barWidth, barHeight);
 
-        ctx.fillStyle = 'lime'; // Foreground (actual health)
+        ctx.fillStyle = 'lime';
         ctx.fillRect(barX, barY, barWidth * healthRatio, barHeight);
     }
 
@@ -487,14 +482,14 @@ class Enemy extends Sprite {
         const startAngle = angle - this.visionAngle / 2;
         const endAngle = angle + this.visionAngle / 2;
 
-        let coneFillColor = 'rgba(255, 255, 0, 0.1)'; // Yellowish for patrol
+        let coneFillColor = 'rgba(255, 255, 0, 0.1)';
         let coneStrokeColor = 'rgba(255, 255, 0, 0.2)';
 
         if (this.state === 'chasing') {
-            coneFillColor = 'rgba(255, 100, 0, 0.2)'; // Orangish-red for chasing
+            coneFillColor = 'rgba(255, 100, 0, 0.2)';
             coneStrokeColor = 'rgba(255, 100, 0, 0.4)';
         } else if (this.state === 'returning') {
-            coneFillColor = 'rgba(255, 200, 0, 0.15)'; // Orange for returning
+            coneFillColor = 'rgba(255, 200, 0, 0.15)';
             coneStrokeColor = 'rgba(255, 200, 0, 0.3)';
         }
 
@@ -509,7 +504,6 @@ class Enemy extends Sprite {
         ctx.fill();
         ctx.stroke();
     }
-
 
     getBoundingBox() {
         return {

@@ -1,3 +1,12 @@
+/*************************************************************************
+ * Wall.js
+ *
+ *  This file defines the Wall class, which represents walls in the game.
+ *  The Wall class extends the Sprite class and includes properties and methods
+ *  for wall dimensions, colors, and rendering.
+ *
+ *****************************************************************************/
+
 class Wall extends Sprite {
     constructor(game, x, y, width, height, color = '#555') {
         super();

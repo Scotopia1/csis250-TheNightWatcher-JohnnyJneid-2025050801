@@ -1,3 +1,12 @@
+/*************************************************************************
+ * Item.js
+ *
+ * This file defines the Item class, which represents collectible items in the game.
+ * The Item class extends the Sprite class and includes properties and methods
+ * for item types, colors, and effects.
+ *
+ ****************************************************************************/
+
 class Item extends Sprite {
     constructor(game, x, y, itemType, size = 15) {
         super();
@@ -32,25 +41,11 @@ class Item extends Sprite {
         const player = sprites.find(sprite => sprite.isPlayer);
 
         if (player) {
-            if (typeof checkAABBCollision === 'function') {
-                if (checkAABBCollision(this.getBoundingBox(), player.getBoundingBox())) {
+            if (checkAABBCollision(this.getBoundingBox(), player.getBoundingBox())) {
                     console.log(`Collected item: ${this.itemType}`);
                     this.applyEffect(player);
                     return true;
                 }
-            } else {
-                // Fallback or error if utility function isn't available
-                console.error("checkAABBCollision function not found! Make sure collision.js is loaded.");
-                // Basic check as fallback (less accurate)
-                if (this.x < player.x + player.width &&
-                    this.x + this.width > player.x &&
-                    this.y < player.y + player.height &&
-                    this.y + this.height > player.y) {
-                    console.log(`Collected item (fallback collision): ${this.itemType}`);
-                    this.applyEffect(player);
-                    return true;
-                }
-            }
         }
 
         return false;

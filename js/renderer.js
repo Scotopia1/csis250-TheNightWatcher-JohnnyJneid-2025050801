@@ -1,3 +1,12 @@
+/**************************************************************************************
+ * renderer.js
+ *
+ * This file contains the Renderer class, which is responsible for rendering
+ * the game world, player, and UI elements. It uses the HTML5 canvas API to draw graphics
+ * on the screen.
+ *
+ ***************************************************************************************/
+
 class Renderer {
     constructor(ctx, game, camera, uiManager) {
         this.ctx = ctx;

@@ -1,3 +1,10 @@
+/************************************************************************************************
+ * Level 1 - More Detailed Map
+ * This level features a more complex layout with multiple sites and generators.
+ * It includes various walls, doors, and spawn areas for the player and enemies.
+ * The level is designed to provide a challenging experience with multiple paths and hiding spots.
+ **************************************************************************************************/
+
 class Level1 extends Level {
     constructor(gameInstance) {
         super(gameInstance);

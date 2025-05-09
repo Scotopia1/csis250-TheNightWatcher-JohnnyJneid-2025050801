@@ -1,3 +1,12 @@
+/**********************************************************************
+ * Animator class
+ *
+ * This class is used to create an animation from a series of frames.
+ * It handles the timing of the frames, looping, and
+ * provides methods to control the animation.
+ *
+ **********************************************************************/
+
 class Animator {
     constructor(frames, frameDuration, loop = true) {
         if (!Array.isArray(frames) || frames.length === 0) {

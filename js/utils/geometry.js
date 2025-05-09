@@ -1,3 +1,9 @@
+// the calculations in this file are based on the following:
+//  *      https://www.geeksforgeeks.org/geometry-2d/
+//  *      https://www.geeksforgeeks.org/line-se-segment-intersection/
+//  *      https://www.geeksforgeeks.org/point-in-cone/
+//  *      https://www.geeksforgeeks.org/angle-between-two-points/
+
 function calculateAngle(x1, y1, x2, y2) {
     const dy = y2 - y1;
     const dx = x2 - x1;

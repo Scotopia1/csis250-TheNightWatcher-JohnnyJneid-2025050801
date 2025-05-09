@@ -1,3 +1,12 @@
+/*************************************************************************
+ *  Projectile Class
+ *
+ *  This class represents a projectile in the game world.
+ *  It extends the Sprite class and includes properties and methods
+ *  for projectile movement, collision detection, and rendering.
+ *
+ *  *  ********************************************************************/
+
 class Projectile extends Sprite {
     constructor(game, startX, startY, targetX, targetY, speed = 8, damage = 10, collisionSize = 8, fallbackColor = 'orange', firedByPlayer = true, shooter = null) {
         super();
@@ -22,17 +31,14 @@ class Projectile extends Sprite {
         this.spriteSheet.onload = () => {
             console.log(`Projectile sprite sheet loaded for instance at (${this.x}, ${this.y})`);
             this.isSheetLoaded = true;
-            if (typeof Animator !== 'undefined') {
-                const frames = [
+            const frames = [
                     { x: 0, y: 0, w: this.spriteWidth, h: this.spriteHeight },
                     { x: 16, y: 0, w: this.spriteWidth, h: this.spriteHeight },
                     { x: 32, y: 0, w: this.spriteWidth, h: this.spriteHeight },
                 ];
                 const frameDuration = 5;
                 this.animator = new Animator(frames, frameDuration, true);
-            } else {
-                console.error("Animator class not found when sheet loaded!");
-            }
+
         };
         this.spriteSheet.onerror = () => {
             console.error(`Failed to load sprite sheet 'bullets+plasma.png' for projectile at (${this.x}, ${this.y})`);
@@ -45,9 +51,6 @@ class Projectile extends Sprite {
         this.angle = 0;
         if (distance > 0) { this.velocityX = (dx / distance) * this.speed; this.velocityY = (dy / distance) * this.speed; this.angle = Math.atan2(dy, dx); }
         else { this.angle = shooter?.currentFacingAngle ?? 0; this.velocityX = Math.cos(this.angle) * this.speed; this.velocityY = Math.sin(this.angle) * this.speed; }
-
-
-
         this.isProjectile = true;
     }
 

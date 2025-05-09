@@ -1,3 +1,13 @@
+/*************************************************************************
+ *  inputManager.js
+ *
+ *      This file contains the InputManager class, which is responsible for
+ *      handling user input from the keyboard and mouse. It manages the state
+ *      of keys and mouse events, including mouse movement, clicks, and
+ *      pointer lock functionality.
+ *
+ ************************************************************************************/
+
 class InputManager {
     constructor(canvas, game = null) {
         this.canvas = canvas;

@@ -1,3 +1,15 @@
+/*************************************************************************
+ *  game.js
+ *
+ *   This file contains the Game class, which is responsible for managing
+ *   the game state, levels, sprites, and input. It serves as the main
+ *   entry point for the game engine, handling the game loop and rendering.
+ *   The Game class also manages the camera, input manager, state manager,
+ *   and UI manager.
+ *
+ *  ************************************************************************************/
+
+
 class Sprite {
     constructor() {
     }
@@ -28,9 +40,6 @@ class Level {
 class Game {
     constructor(canvasId = 'gameCanvas', worldWidth = 5200, worldHeight = 4000) {
         this.canvas = document.getElementById(canvasId);
-        if (!this.canvas) {
-            throw new Error(`Canvas element with ID '${canvasId}' not found!`);
-        }
         this.ctx = this.canvas.getContext('2d');
 
         this.WORLD_WIDTH = worldWidth;
@@ -58,12 +67,12 @@ class Game {
 
         this.lastTime = 0;
         this.activeEnemies = 0;
-        this.score = 0; // Initialize score
+        this.score = 0;
 
         this.bindKeyboardEvents();
         this.bindMouseEvents();
 
-        console.log("Core Game Engine Initialized (Ready for Manager Refs).");
+        console.log("Core Game Engine Initialized.");
     }
 
     setManagers(managers) {
@@ -106,10 +115,9 @@ class Game {
         if (this._spritesToRemove.length > 0) {
             this._spritesToRemove.forEach(removedSprite => {
                 if (removedSprite.isEnemy && removedSprite.state === 'dead') {
-                    // Check if score hasn't been awarded for this enemy yet to prevent double scoring if die() is called multiple times
                     if (!removedSprite.scoreAwarded) {
-                        this.addScore(100); // Award score when enemy is confirmed dead and removed
-                        removedSprite.scoreAwarded = true; // Mark as score awarded
+                        this.addScore(100);
+                        removedSprite.scoreAwarded = true;
                     }
                     this.activeEnemies--;
                     console.log(`Enemy removed. Active enemies: ${this.activeEnemies}`);
@@ -216,15 +224,11 @@ class Game {
             this.currentLevelIndex = index;
             const currentLevelObject = this.levels[index];
             currentLevelObject.initialEnemyCount = 0;
-
-            try {
                 currentLevelObject.initialize();
                 let tempEnemyCount = 0;
                 this._spritesToAdd.forEach(s => {
                     if (s.isEnemy) tempEnemyCount++;
                 });
-                // currentLevelObject.initialEnemyCount = tempEnemyCount; // Set before pushing
-
                 if (this._spritesToAdd.length > 0) {
                     this.sprites.push(...this._spritesToAdd);
                     this.player = this.sprites.find(s => s.isPlayer);
@@ -245,10 +249,7 @@ class Game {
 
                 return this.player != null;
 
-            } catch (error) {
-                console.error(`Error initializing level ${index}:`, error);
-                return false;
-            }
+
         } else {
             console.error(`Attempted to load invalid level index: ${index}`);
             return false;
@@ -285,33 +286,32 @@ class Game {
     }
 
     bindKeyboardEvents() {
-        // These are intentionally left basic as InputManager handles the stateful key object
         window.addEventListener('keydown', (e) => {
-            // this.keys[e.key] = true; // InputManager handles this
+            this.keys[e.key] = true;
         });
         window.addEventListener('keyup', (e) => {
-            // this.keys[e.key] = false; // InputManager handles this
+            this.keys[e.key] = false;
         });
     }
     bindMouseEvents() {
         this.canvas.addEventListener("mousemove", (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            this.mouse.x = e.clientX - rect.left; // InputManager handles this
-            this.mouse.y = e.clientY - rect.top; // InputManager handles this
+            this.mouse.x = e.clientX - rect.left;
+            this.mouse.y = e.clientY - rect.top;
         });
         this.canvas.addEventListener("mousedown", (e) => {
-            if (e.target === this.canvas) { // InputManager handles this
+            if (e.target === this.canvas) {
                 this.mouse.down = true;
                 this.mouse.clicked = true;
             }
         });
         this.canvas.addEventListener("mouseup", (e) => {
-            if (e.target === this.canvas) { // InputManager handles this
+            if (e.target === this.canvas) {
                 this.mouse.down = false;
             }
         });
         this.canvas.addEventListener("mouseleave", () => {
-            this.mouse.down = false; // InputManager handles this
+            this.mouse.down = false;
         });
     }
 }

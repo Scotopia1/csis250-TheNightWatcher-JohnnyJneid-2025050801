@@ -1,3 +1,12 @@
+/******************************************************************
+ * StateManager.js
+ *
+ * This module manages the game states and transitions between them.
+ * It handles the main menu, level selection, tutorial, game over,
+ * level completion, and paused states.
+ *
+ * ****************************************************************/
+
 const GameState = {
     MENU: 'menu',
     PLAYING: 'playing',
@@ -5,7 +14,7 @@ const GameState = {
     TUTORIAL: 'tutorial',
     GAME_OVER: 'game_over',
     LEVEL_COMPLETE: 'level_complete',
-    PAUSED: 'paused' // New PAUSED state
+    PAUSED: 'paused'
 };
 
 class StateManager {
@@ -17,7 +26,7 @@ class StateManager {
         this.menuButtons = [];
         this.menuMusic = null;
         this.levelCompleteButtons = [];
-        this.pauseButtons = []; // For UIManager to populate
+        this.pauseButtons = [];
 
         this.setupMenuButtons();
         this.setupMenuAudio();
@@ -40,10 +49,8 @@ class StateManager {
             const playPromise = this.menuMusic.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
-                    // console.log("Menu music started.");
-                }).catch(error => {
-                    console.warn("Menu music autoplay was prevented. User interaction might be needed.", error);
-                });
+                    console.log("Menu music started.");
+                })
             }
         }
     }
@@ -51,7 +58,7 @@ class StateManager {
     pauseMenuMusic() {
         if (this.menuMusic && !this.menuMusic.paused) {
             this.menuMusic.pause();
-            // console.log("Menu music paused.");
+            console.log("Menu music paused.");
         }
     }
 
@@ -69,7 +76,7 @@ class StateManager {
                 w: buttonW,
                 h: buttonH,
                 text: 'New Game',
-                action: () => this.startGame(this.game.levels.findIndex(level => level instanceof Tutorial)) // Start with Tutorial
+                action: () => this.startGame(this.game.levels.findIndex(level => level instanceof Tutorial))
             },
             {
                 x: startX,
@@ -121,7 +128,7 @@ class StateManager {
 
         if (this.currentState === GameState.PLAYING) {
             this.inputManager.requestPointerLock();
-        } else if (this.currentState !== GameState.PAUSED) { // Don't exit pointer lock if pausing
+        } else if (this.currentState !== GameState.PAUSED) {
             this.inputManager.exitPointerLock();
         }
 
@@ -134,7 +141,7 @@ class StateManager {
             if (this.uiManager) {
                 this.uiManager.setupPauseButtons();
             }
-            this.inputManager.exitPointerLock(); // Ensure pointer lock is exited for pause menu interaction
+            this.inputManager.exitPointerLock();
         }
     }
 
@@ -183,7 +190,7 @@ class StateManager {
             } else if (this.currentState === GameState.PAUSED) {
                 this.changeState(GameState.PLAYING);
             }
-            input.keys['Escape'] = false; // Consume the input
+            input.keys['Escape'] = false;
         }
 
         switch (this.currentState) {
@@ -227,7 +234,7 @@ class StateManager {
                     for (const button of this.uiManager.levelSelectButtons) {
                         if (input.mouse.x >= button.x && input.mouse.x <= button.x + button.w &&
                             input.mouse.y >= button.y && input.mouse.y <= button.y + button.h) {
-                            if (this.menuMusic && this.menuMusic.paused && this.currentState === GameState.MENU) { // This condition seems off, should be for level select
+                            if (this.menuMusic && this.menuMusic.paused && this.currentState === GameState.MENU) {
                                 this.playMenuMusic();
                             }
                             if (button.id === 'back_to_menu_from_select' && typeof button.action === 'function') {
@@ -275,7 +282,7 @@ class StateManager {
                     const level2Index = this.game.levels.findIndex(level => level instanceof Level2);
                     if (level2Index !== -1) {
                         setTimeout(() => {
-                            if (this.currentState === GameState.LEVEL_COMPLETE) { // Check if still in this state
+                            if (this.currentState === GameState.LEVEL_COMPLETE) {
                                 this.startGame(level2Index);
                             }
                         }, 1500);

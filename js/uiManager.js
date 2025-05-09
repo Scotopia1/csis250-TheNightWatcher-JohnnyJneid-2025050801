@@ -1,3 +1,14 @@
+/******************************************************************************************
+ * UIManager.js
+ *
+ * This module manages the user interface for the game, including the main menu,
+ * game over screen, level selection, and HUD elements.
+ *
+ * It handles the rendering of buttons, overlays, and other UI components,
+ * as well as the interaction with the game state.
+ *
+ ********************************************************************************************/
+
 class UIManager {
     constructor(ctx, game, stateManager) {
         this.ctx = ctx;
@@ -34,14 +45,14 @@ class UIManager {
         const buttonW = 200;
         const buttonH = 50;
         const centerX = this.game.VIEWPORT_WIDTH / 2;
-        const startY = this.game.VIEWPORT_HEIGHT / 2 + 60; // Adjusted Y for score
+        const startY = this.game.VIEWPORT_HEIGHT / 2 + 60;
         const spacing = 70;
 
         this.gameOverButtons = [
             { x: centerX - buttonW / 2, y: startY + spacing, w: buttonW, h: buttonH, text: 'Play Again', id: 'play_again' }, // Moved down
             {
                 x: centerX - buttonW / 2,
-                y: startY + spacing * 2, // Moved down
+                y: startY + spacing * 2,
                 w: buttonW,
                 h: buttonH,
                 text: 'Return to Menu',
@@ -99,7 +110,7 @@ class UIManager {
         const buttonW = 220;
         const buttonH = 50;
         const centerX = this.game.VIEWPORT_WIDTH / 2;
-        let startY = this.game.VIEWPORT_HEIGHT / 2 + 60; // Adjusted Y for score
+        let startY = this.game.VIEWPORT_HEIGHT / 2 + 60;
         const spacing = 70;
 
         const tutorialIndex = this.game.levels.findIndex(level => level instanceof Tutorial);
@@ -125,7 +136,6 @@ class UIManager {
             });
         } else if (currentLevelIndex === level1Index) {
             this.levelCompleteMessage.subtitle = "Heading to Level 2...";
-            // No buttons, auto-advance handled by StateManager
         } else if (currentLevelIndex === level2Index) {
             this.levelCompleteMessage.title = "Congratulations!";
             this.levelCompleteMessage.subtitle = "All Levels Cleared!";
@@ -133,8 +143,8 @@ class UIManager {
                 x: centerX - buttonW / 2, y: startY, w: buttonW, h: buttonH, text: 'Main Menu',
                 action: () => this.stateManager.changeState(GameState.MENU)
             });
-        } else { // Default for other levels
-            startY = this.game.VIEWPORT_HEIGHT / 2 + 40; // Readjust if only one button potentially
+        } else {
+            startY = this.game.VIEWPORT_HEIGHT / 2 + 40;
             this.levelCompleteButtons.push({
                 x: centerX - buttonW / 2, y: startY, w: buttonW, h: buttonH, text: 'Next Level',
                 action: () => this.game.requestNextLevel() ? null : this.stateManager.changeState(GameState.MENU)
@@ -151,7 +161,7 @@ class UIManager {
         const buttonW = 200;
         const buttonH = 50;
         const centerX = this.game.VIEWPORT_WIDTH / 2;
-        const startY = this.game.VIEWPORT_HEIGHT / 2; // Adjusted for score display
+        const startY = this.game.VIEWPORT_HEIGHT / 2;
         const spacing = 70;
 
         this.pauseButtons.push({
@@ -178,7 +188,7 @@ class UIManager {
                 this.drawPlayingUI();
                 break;
             case GameState.PAUSED:
-                this.drawPlayingUI(); // Draw game state underneath
+                this.drawPlayingUI();
                 this.drawPauseOverlay();
                 break;
             case GameState.LEVEL_SELECT:
@@ -191,11 +201,11 @@ class UIManager {
                 this.drawTutorialScreen();
                 break;
             case GameState.GAME_OVER:
-                this.drawPlayingUI(); // Draw final game state underneath
+                this.drawPlayingUI();
                 this.drawGameOverOverlay();
                 break;
             case GameState.LEVEL_COMPLETE:
-                this.drawPlayingUI(); // Draw final game state underneath
+                this.drawPlayingUI();
                 this.drawLevelCompleteOverlay();
                 break;
         }
@@ -258,14 +268,13 @@ class UIManager {
         const uiY = 20;
         const barHeight = 10;
         const barWidth = 100;
-        const spacing = 15; // Spacing between stat items
+        const spacing = 15;
         const textOffsetY = barHeight / 2;
 
         ctx.font = '12px Arial';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
 
-        // Health
         ctx.fillStyle = 'gray';
         ctx.fillRect(uiX, uiY, barWidth, barHeight);
         ctx.fillStyle = 'red';
@@ -274,7 +283,6 @@ class UIManager {
         ctx.fillStyle = 'white';
         ctx.fillText(`HP: ${player.health}/${player.maxHealth}`, uiX + barWidth + 5, uiY + textOffsetY);
 
-        // Shield
         const shieldY = uiY + spacing;
         ctx.fillStyle = 'gray';
         ctx.fillRect(uiX, shieldY, barWidth, barHeight);
@@ -284,15 +292,13 @@ class UIManager {
         ctx.fillStyle = 'white';
         ctx.fillText(`SH: ${player.shield}/${player.maxShield}`, uiX + barWidth + 5, shieldY + textOffsetY);
 
-        // Ammo
         const ammoY = shieldY + spacing;
         ctx.fillStyle = 'white';
         ctx.fillText(`Ammo: ${player.ammo}/${player.maxAmmo}`, uiX, ammoY + textOffsetY);
 
-        // Score
         const scoreY = ammoY + spacing;
-        ctx.fillStyle = 'gold'; // Score color
-        ctx.font = '14px Arial'; // Slightly larger for score
+        ctx.fillStyle = 'gold';
+        ctx.font = '14px Arial';
         ctx.fillText(`Score: ${this.game.score}`, uiX, scoreY + textOffsetY);
     }
 
@@ -394,7 +400,7 @@ class UIManager {
         this.ctx.font = '50px Arial';
         this.ctx.fillStyle = 'red';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('GAME OVER', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 100); // Adjusted Y
+        this.ctx.fillText('GAME OVER', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 100);
 
         this.ctx.font = '30px Arial';
         this.ctx.fillStyle = 'white';
@@ -427,17 +433,17 @@ class UIManager {
         this.ctx.font = '50px Arial';
         this.ctx.fillStyle = 'lightgreen';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(this.levelCompleteMessage.title, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 120); // Adjusted Y
+        this.ctx.fillText(this.levelCompleteMessage.title, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 120);
 
         if (this.levelCompleteMessage.subtitle) {
             this.ctx.font = '30px Arial';
             this.ctx.fillStyle = 'white';
-            this.ctx.fillText(this.levelCompleteMessage.subtitle, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 70); // Adjusted Y
+            this.ctx.fillText(this.levelCompleteMessage.subtitle, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 70);
         }
 
         this.ctx.font = '30px Arial';
         this.ctx.fillStyle = 'gold';
-        this.ctx.fillText(`Score: ${this.game.score}`, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 20); // Display Score
+        this.ctx.fillText(`Score: ${this.game.score}`, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 20);
 
 
         this.ctx.font = '24px Arial';
@@ -466,11 +472,11 @@ class UIManager {
         this.ctx.font = '50px Arial';
         this.ctx.fillStyle = 'white';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Paused', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 100); // Adjusted Y
+        this.ctx.fillText('Paused', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 100);
 
         this.ctx.font = '30px Arial';
         this.ctx.fillStyle = 'gold';
-        this.ctx.fillText(`Current Score: ${this.game.score}`, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 50); // Display Score
+        this.ctx.fillText(`Current Score: ${this.game.score}`, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 50);
 
 
         this.ctx.font = '24px Arial';

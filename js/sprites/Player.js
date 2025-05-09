@@ -1,14 +1,23 @@
+/************************************************************************
+ * Player.js
+ *
+ *  This file defines the Player class, which represents the player character in the game.
+ *  The Player class extends the Sprite class and includes properties and methods
+ *  for player movement, shooting, health, ammo, and upgrades.
+ *
+ ************************************************************************/
+
 class Player extends Sprite {
     constructor(game, x, y, size = 60, color = 'deepskyblue', speed = 3, visionRange = 250, visionAngleDegrees = 90) {
         super();
         this.game = game;
-        this.x = x; // World position (center)
+        this.x = x;
         this.y = y;
-        this.drawWidth = size; // Visual size on screen
+        this.drawWidth = size;
         this.drawHeight = size;
-        this.width = size * 0.7; // Smaller collision box width (adjust as needed)
-        this.height = size * 0.7; // Smaller collision box height (adjust as needed)
-        this.color = color; // Fallback color
+        this.width = size * 0.7;
+        this.height = size * 0.7;
+        this.color = color;
         this.baseSpeed = speed;
         this.speed = speed;
         this.maxHealth = 100;
@@ -76,13 +85,8 @@ class Player extends Sprite {
         } else if (mouse) {
             const pCX = this.x;
             const pCY = this.y;
-            if (typeof calculateAngle === 'function') {
                 this.currentFacingAngle = calculateAngle(pCX, pCY, mouse.x + game.camera.x, mouse.y + game.camera.y);
-            } else {
-                if (mouse.x + game.camera.x !== pCX || mouse.y + game.camera.y !== pCY) {
-                    this.currentFacingAngle = Math.atan2(mouse.y + game.camera.y - pCY, mouse.x + game.camera.x - pCX);
-                }
-            }
+
         }
 
         let dx = 0;
@@ -100,11 +104,9 @@ class Player extends Sprite {
         for (const sprite of sprites) {
             if (sprite.isWall) {
                 const wallBox = sprite.getBoundingBox();
-                if (typeof checkAABBCollision === 'function') {
                     if (checkAABBCollision({...nextBox, y: this.y - this.height / 2}, wallBox)) collX = true;
                     if (checkAABBCollision({...nextBox, x: this.x - this.width / 2}, wallBox)) collY = true;
-                }
-            }
+                      }
         }
         if (!collX) this.x = nextX;
         if (!collY) this.y = nextY;

@@ -1,3 +1,10 @@
+/***********************************************************************
+    *  Tutorial.js
+    * This file is part of the game.
+    * It contains the implementation of the Tutorial level.
+    * This level is designed to introduce players to the game mechanics.
+ ***********************************************************************/
+
 class Tutorial extends Level {
     constructor(gameInstance) {
         super(gameInstance);

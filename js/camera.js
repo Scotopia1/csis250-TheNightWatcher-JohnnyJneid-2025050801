@@ -1,3 +1,14 @@
+/**************************************************************
+ * Camera Class
+ *
+ *  This class handles the camera's position and viewport
+ *  functionality in the game world. It allows the camera
+ *  to follow a target sprite,
+ *  apply transformations to the canvas context, and convert
+ *  between world and viewport coordinates.
+ *
+ ***************************************************************************************/
+
 class Camera {
     constructor(game, viewportWidth, viewportHeight, worldWidth, worldHeight) {
         this.game = game;
@@ -13,13 +24,8 @@ class Camera {
     }
 
     follow(sprite) {
-        if (sprite && typeof sprite.x === 'number' && typeof sprite.y === 'number') {
-            this.target = sprite;
+       this.target = sprite;
             console.log("Camera target set:", sprite);
-        } else {
-            console.error("Invalid camera target:", sprite);
-            this.target = null;
-        }
     }
 
     update() {

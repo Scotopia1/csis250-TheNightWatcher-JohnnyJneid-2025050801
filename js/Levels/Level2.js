@@ -1,3 +1,11 @@
+/*************************************************************************
+ *  Level2.js
+ *  This file is part of the game "Stealth Game".
+ *  It contains the implementation of Level 2, which is a more complex
+ *  level with multiple rooms and corridors.
+ *
+ *******************************************************************************/
+
 class Level2 extends Level {
     constructor(gameInstance) {
         super(gameInstance);
