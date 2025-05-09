@@ -1,14 +1,16 @@
+// Ensure Sprite, Animator, checkAABBCollision, calculateAngle are loaded
+
 class Player extends Sprite {
-    constructor(game, x, y, size = 60, color = 'deepskyblue', speed = 1.5, visionRange = 250, visionAngleDegrees = 90) {
+    constructor(game, x, y, size = 60, color = 'deepskyblue', speed = 3, visionRange = 250, visionAngleDegrees = 90) {
         super();
         this.game = game;
-        this.x = x;
+        this.x = x; // World position (center)
         this.y = y;
-        this.drawWidth = 60;
-        this.drawHeight = 60;
-        this.width = 60 * 0.7;
-        this.height = 60 * 0.7;
-        this.color = color;
+        this.drawWidth = size; // Visual size on screen
+        this.drawHeight = size;
+        this.width = size * 0.7; // Smaller collision box width (adjust as needed)
+        this.height = size * 0.7; // Smaller collision box height (adjust as needed)
+        this.color = color; // Fallback color
         this.baseSpeed = speed;
         this.speed = speed;
         this.maxHealth = 100;
@@ -30,7 +32,6 @@ class Player extends Sprite {
         this.SPRITE_SHEET_ROWS = 4;
         this.SPRITE_WIDTH = 120;
         this.SPRITE_HEIGHT = 120;
-        // ---
 
         this.spriteSheet = new Image();
         this.isSheetLoaded = false;
@@ -51,7 +52,6 @@ class Player extends Sprite {
     setupAnimation() {
         if (!this.spriteSheet || typeof Animator === 'undefined') return;
 
-
         const playerCol = 1;
         const playerRow = 0;
         const frames = [
@@ -61,7 +61,7 @@ class Player extends Sprite {
                 w: this.SPRITE_WIDTH,
                 h: this.SPRITE_HEIGHT
             }
-        ];
+            ];
         const frameDuration = 15;
         this.animator = new Animator(frames, frameDuration, true);
         console.log("Player animator created.");
@@ -72,7 +72,6 @@ class Player extends Sprite {
         if (this.fireCooldown > 0) {
             this.fireCooldown--;
         }
-
 
         if (mouse && mouse.isLocked) {
             this.currentFacingAngle += mouse.dx * this.rotationSensitivity;
@@ -88,14 +87,12 @@ class Player extends Sprite {
             }
         }
 
-
         let dx = 0;
         let dy = 0;
         if (keys['w'] || keys['ArrowUp']) dy -= this.speed;
         if (keys['s'] || keys['ArrowDown']) dy += this.speed;
         if (keys['a'] || keys['ArrowLeft']) dx -= this.speed;
         if (keys['d'] || keys['ArrowRight']) dx += this.speed;
-
 
         const nextX = this.x + dx;
         const nextY = this.y + dy;
@@ -114,13 +111,11 @@ class Player extends Sprite {
         if (!collX) this.x = nextX;
         if (!collY) this.y = nextY;
 
-
         if (mouse && mouse.down && this.ammo > 0 && this.fireCooldown <= 0) {
             this.shoot();
             this.ammo--;
             this.fireCooldown = this.fireRate;
         }
-
 
         if (this.animator) {
             if (dx !== 0 || dy !== 0) {
@@ -140,10 +135,12 @@ class Player extends Sprite {
     }
 
     shoot() {
-        if (typeof Projectile === 'undefined') {
-            console.error("Projectile class not defined!");
-            return;
-        }
+        const file = '../../assets/Sounds/shooting.wav';
+        const audio = new Audio(file);
+        audio.play().then(() => {
+                console.log("Shooting sound played.");
+            }
+        )
         const playerCenterX = this.x;
         const playerCenterY = this.y;
         const offsetDistance = this.drawWidth / 2 + 8;
@@ -288,6 +285,13 @@ class Player extends Sprite {
     die() {
         if (this.speed === 0 && this.color === '#555555') return;
         console.error("Player has died!");
+        const file = '../../assets/Sounds/gameover.wav';
+        const audio = new Audio(file);
+        audio.play().then(() => {
+                console.log("Game over sound played.");
+            }
+        )
+
         this.color = '#555555';
         this.speed = 0;
         this.ammo = 0;

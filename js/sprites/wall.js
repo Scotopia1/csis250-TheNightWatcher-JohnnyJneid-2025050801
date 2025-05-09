@@ -1,5 +1,5 @@
 class Wall extends Sprite {
-    constructor(game, x, y, width, height) {
+    constructor(game, x, y, width, height, color = '#555') {
         super();
 
         this.game = game;
@@ -7,7 +7,7 @@ class Wall extends Sprite {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.color = '#555';
+        this.color = color;
 
         this.isWall = true;
     }

@@ -1,5 +1,4 @@
 class Projectile extends Sprite {
-
     constructor(game, startX, startY, targetX, targetY, speed = 8, damage = 10, collisionSize = 8, fallbackColor = 'orange', firedByPlayer = true, shooter = null) {
         super();
 
@@ -25,9 +24,9 @@ class Projectile extends Sprite {
             this.isSheetLoaded = true;
             if (typeof Animator !== 'undefined') {
                 const frames = [
-                    {x: 0, y: 0, w: this.spriteWidth, h: this.spriteHeight},
-                    {x: 16, y: 0, w: this.spriteWidth, h: this.spriteHeight},
-                    {x: 32, y: 0, w: this.spriteWidth, h: this.spriteHeight},
+                    { x: 0, y: 0, w: this.spriteWidth, h: this.spriteHeight },
+                    { x: 16, y: 0, w: this.spriteWidth, h: this.spriteHeight },
+                    { x: 32, y: 0, w: this.spriteWidth, h: this.spriteHeight },
                 ];
                 const frameDuration = 5;
                 this.animator = new Animator(frames, frameDuration, true);
@@ -41,12 +40,13 @@ class Projectile extends Sprite {
         };
         this.spriteSheet.src = '../../images/Projectiles/bullets+plasma.png';
 
-
         const dx = targetX - startX; const dy = targetY - startY;
         const distance = Math.sqrt(dx * dx + dy * dy);
         this.angle = 0;
         if (distance > 0) { this.velocityX = (dx / distance) * this.speed; this.velocityY = (dy / distance) * this.speed; this.angle = Math.atan2(dy, dx); }
         else { this.angle = shooter?.currentFacingAngle ?? 0; this.velocityX = Math.cos(this.angle) * this.speed; this.velocityY = Math.sin(this.angle) * this.speed; }
+
+
 
         this.isProjectile = true;
     }

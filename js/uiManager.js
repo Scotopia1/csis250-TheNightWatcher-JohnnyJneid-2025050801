@@ -162,25 +162,10 @@ class UIManager {
         this.ctx.font = '40px Arial';
         this.ctx.fillStyle = 'orange';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Select Level', this.game.VIEWPORT_WIDTH / 2, 100);
-
-        this.ctx.font = '24px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        const mouse = this.game.inputManager ? this.game.inputManager.mouse : {x: -1, y: -1};
-
-        for (const button of this.stateManager.levelSelectButtons) {
-            const isHovered = mouse.x >= button.x && mouse.x <= button.x + button.w &&
-                mouse.y >= button.y && mouse.y <= button.y + button.h && !mouse.isLocked;
-
-            this.ctx.fillStyle = isHovered ? '#775533' : '#553311';
-            this.ctx.strokeStyle = '#DDDDDD';
-            this.ctx.lineWidth = 2;
-            this.ctx.fillRect(button.x, button.y, button.w, button.h);
-            this.ctx.strokeRect(button.x, button.y, button.w, button.h);
-            this.ctx.fillStyle = '#FFFFFF';
-            this.ctx.fillText(button.text, button.x + button.w / 2, button.y + button.h / 2);
-        }
+        this.ctx.fillText('Level Select (TODO)', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 20);
+        this.ctx.font = '20px Arial';
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillText('Click to return to Menu', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 + 30);
     }
 
     drawTutorialScreen() {

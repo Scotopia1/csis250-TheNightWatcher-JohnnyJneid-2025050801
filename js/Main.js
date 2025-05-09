@@ -14,15 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // --- Instantiate Core Components ---
     try {
-        const game = new Game(canvasId);
+        const game = new Game(canvasId); // Create core engine first
         const inputManager = new InputManager(canvas);
         const camera = new Camera(game, game.VIEWPORT_WIDTH, game.VIEWPORT_HEIGHT, game.WORLD_WIDTH, game.WORLD_HEIGHT);
-        const stateManager = new StateManager(game, inputManager, null);
-        const uiManager = new UIManager(ctx, game, stateManager);
-        stateManager.uiManager = uiManager;
+        const stateManager = new StateManager(game, inputManager, null); // Pass null for uiManager initially
+        const uiManager = new UIManager(ctx, game, stateManager); // Now pass stateManager
+        stateManager.uiManager = uiManager; // Set the reference in stateManager
         const renderer = new Renderer(ctx, game, camera, uiManager);
 
+        // --- Link Managers to Game Instance ---
         game.setManagers({
             inputManager: inputManager,
             stateManager: stateManager,
@@ -31,15 +33,26 @@ document.addEventListener('DOMContentLoaded', () => {
             uiManager: uiManager
         });
 
-        cont
-        const level1 = new Level1(game);
-        const level2 = new Level2(game);
-        game.addLevel(level1);
-        game.addLevel(level2);
+        // --- Load Levels ---
+        if (typeof Level1 !== 'undefined' && typeof Level2 !== 'undefined') {
+            const level1 = new Level1(game);
+            const level2 = new Level2(game);
+            game.addLevel(level1);
+            game.addLevel(level2);
+            console.log("Levels added to game engine.");
+            // Set initial level (e.g., level 0) - Game starts in MENU, level loaded by StateManager.startGame
+            // game.setLevel(0); // No longer needed here, StateManager handles it
+        } else {
+            console.error("Level1 or Level2 class not defined! Check script loading order.");
+        }
 
-        game.animate(0);
+        // --- Start Game Loop ---
+        console.log("Starting main game loop via game.animate()...");
+        // Start the loop using the method within the Game instance
+        game.animate(0); // Pass initial timestamp (0 or performance.now())
 
     } catch (error) {
+        console.error("Error during game initialization:", error);
         if (ctx) {
             ctx.fillStyle = 'red';
             ctx.font = '16px Arial';

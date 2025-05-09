@@ -1,23 +1,24 @@
 class Enemy extends Sprite {
-    constructor(game, x, y) {
+    constructor(game, x, y, size = 40, color = 'red', speed = 1, patrolDistance = 100, health = 50, visionRange = 250, visionAngleDegrees = 80) {
         super();
+
         this.game = game;
         this.startX = x;
         this.startY = y;
         this.x = x;
         this.y = y;
-        this.width = 40;
-        this.height = 40;
-        this.baseColor = 'red';
-        this.color = 'red';
-        this.speed = 1;
-        this.patrolDistance = 100;
+        this.width = size;
+        this.height = size;
+        this.baseColor = color;
+        this.color = color;
+        this.speed = speed;
+        this.patrolDistance = patrolDistance;
 
-        this.maxHealth = 50;
-        this.health = 50;
+        this.maxHealth = health;
+        this.health = health;
 
-        this.visionRange = 250;
-        this.visionAngle = 80 * (Math.PI / 180);
+        this.visionRange = visionRange;
+        this.visionAngle = visionAngleDegrees * (Math.PI / 180);
 
         this.directionX = 1;
         this.currentFacingAngle = 0;
