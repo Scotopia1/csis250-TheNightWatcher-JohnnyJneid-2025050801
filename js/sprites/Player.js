@@ -1,5 +1,3 @@
-// Ensure Sprite, Animator, checkAABBCollision, calculateAngle are loaded
-
 class Player extends Sprite {
     constructor(game, x, y, size = 60, color = 'deepskyblue', speed = 3, visionRange = 250, visionAngleDegrees = 90) {
         super();

@@ -154,11 +154,6 @@ class Game {
         const deltaTime = (timestamp - this.lastTime) / 1000;
         this.lastTime = timestamp;
 
-        if (!this.inputManager || !this.stateManager || !this.camera || !this.renderer) {
-            console.error("Managers not set in Game instance! Cannot run game loop.");
-            return;
-        }
-
         const inputState = this.inputManager.getInputState();
 
         this.stateManager.update();
