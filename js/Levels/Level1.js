@@ -19,41 +19,34 @@ class Level1 extends Level {
         this.game.addSprite(new Wall(this.game, worldW - wallThickness, wallThickness, wallThickness, worldH - 2 * wallThickness, borderColor));
 
         const aSiteX = 3500, aSiteY = 700, aSiteW = 1100, aSiteH = 900;
-        //this.game.addSprite(new Wall(this.game, aSiteX, aSiteY, aSiteW, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, aSiteX, aSiteY + aSiteH, aSiteW, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, aSiteX, aSiteY, wallThickness, aSiteH, siteColor));
         this.game.addSprite(new Wall(this.game, aSiteX + aSiteW, aSiteY, wallThickness, aSiteH + wallThickness, siteColor));
         const aGenX = aSiteX + 300, aGenY = aSiteY + 300, aGenW = 400, aGenH = 300;
-        //this.game.addSprite(new Wall(this.game, aGenX, aGenY, aGenW, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, aGenX, aGenY + aGenH, aGenW, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, aGenX, aGenY, wallThickness, aGenH, siteColor));
         this.game.addSprite(new Wall(this.game, aGenX + aGenW, aGenY, wallThickness, aGenH + wallThickness, siteColor));
         const aDoorWidth = 200;
-        //this.game.addSprite(new Wall(this.game, aSiteX - 300, aSiteY - 400, wallThickness, 400 + aSiteH / 2 - aDoorWidth / 2, wallColor));
         this.game.addSprite(new Wall(this.game, aSiteX - 300, aSiteY + aSiteH / 2 + aDoorWidth / 2, wallThickness, aSiteH / 2 + wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, aSiteX + aSiteW, aSiteY - 400, wallThickness, 400, wallColor));
         this.game.addSprite(new Wall(this.game, aSiteX + 100, aSiteY + aSiteH - 200, 200, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, aSiteX + aSiteW - 200, aSiteY + 100, wallThickness, 200, siteColor));
 
         const bSiteX = 400, bSiteY = 800, bSiteW = 1200, bSiteH = 1000;
-        //this.game.addSprite(new Wall(this.game, bSiteX, bSiteY, bSiteW + wallThickness, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, bSiteX, bSiteY + bSiteH, bSiteW, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, bSiteX, bSiteY, wallThickness, bSiteH + wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, bSiteX + bSiteW, bSiteY, wallThickness, bSiteH, siteColor));
         const bGenX = bSiteX + 400, bGenY = bSiteY + 300, bGenW = 500, bGenH = 300;
-        //this.game.addSprite(new Wall(this.game, bGenX, bGenY, bGenW, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, bGenX, bGenY + bGenH, bGenW, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, bGenX, bGenY, wallThickness, bGenH, siteColor));
         this.game.addSprite(new Wall(this.game, bGenX + bGenW, bGenY, wallThickness, bGenH + wallThickness, siteColor));
         const bDoorWidth = 200;
-        //this.game.addSprite(new Wall(this.game, bSiteX, bSiteY - 400, wallThickness, 400, wallColor));
         this.game.addSprite(new Wall(this.game, bSiteX + bSiteW + 300, bSiteY - 400, wallThickness, 400 + bSiteH / 2 - bDoorWidth / 2, wallColor));
         this.game.addSprite(new Wall(this.game, bSiteX + bSiteW + 300, bSiteY + bSiteH / 2 + bDoorWidth / 2, wallThickness, bSiteH / 2 + wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, bSiteX + bSiteW - 200, bSiteY + bSiteH - 200, 200, wallThickness, siteColor));
         this.game.addSprite(new Wall(this.game, bSiteX + 100, bSiteY + 100, wallThickness, 200, siteColor));
 
         const midX = worldW / 2 - 150, midY = worldH / 2 - 100, midW = 300, midH = 200;
-        //this.game.addSprite(new Wall(this.game, midX, midY, midW, wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, midX, midY + midH, midW, wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, midX, midY, wallThickness, midH, wallColor));
         this.game.addSprite(new Wall(this.game, midX + midW, midY, wallThickness, midH + wallThickness, wallColor));
@@ -61,7 +54,6 @@ class Level1 extends Level {
         this.game.addSprite(new Wall(this.game, midX + midW + 400, wallThickness, wallThickness, midY - wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, midX - 400, midY - 300, midW + 800, wallThickness, wallColor));
         const connectorDoorWidth = 250;
-       // this.game.addSprite(new Wall(this.game, bSiteX + bSiteW, bSiteY + bSiteH + wallThickness, (midX - (bSiteX + bSiteW)) / 2 - connectorDoorWidth / 2, wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, bSiteX + bSiteW + (midX - (bSiteX + bSiteW)) / 2 + connectorDoorWidth / 2, bSiteY + bSiteH + wallThickness, (midX - (bSiteX + bSiteW)) / 2 - connectorDoorWidth / 2, wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, midX + midW, aSiteY + aSiteH + wallThickness, (aSiteX - (midX + midW)) / 2 - connectorDoorWidth / 2, wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, midX + midW + (aSiteX - (midX + midW)) / 2 + connectorDoorWidth / 2, aSiteY + aSiteH + wallThickness, (aSiteX - (midX + midW)) / 2 - connectorDoorWidth / 2, wallThickness, wallColor));
@@ -69,7 +61,6 @@ class Level1 extends Level {
         this.game.addSprite(new Wall(this.game, aSiteX - 300, aSiteY + aSiteH, wallThickness, midY + midH - (aSiteY + aSiteH), wallColor));
 
         const spawnAreaY = worldH - 800;
-        //this.game.addSprite(new Wall(this.game, wallThickness, spawnAreaY, worldW / 2 - 400, wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, worldW / 2 + 400, spawnAreaY, worldW / 2 - 400 - wallThickness, wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, worldW / 2 - 100, spawnAreaY, wallThickness, worldH - spawnAreaY - wallThickness, wallColor));
         this.game.addSprite(new Wall(this.game, worldW / 2 - 500, worldH - 500, 300, wallThickness, wallColor));
@@ -78,11 +69,9 @@ class Level1 extends Level {
         const playerStartX = worldW / 2;
         const playerStartY = worldH - 300;
         const playerSize = 60;
-
         this.game.addSprite(new Player(this.game, playerStartX, playerStartY, playerSize));
 
         const enemySize = 60;
-
         const patrolDistSmall = 300;
         const patrolDistMed = 600;
         const patrolDistLong = 1000;

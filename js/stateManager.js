@@ -3,9 +3,10 @@ const GameState = {
     PLAYING: 'playing',
     LEVEL_SELECT: 'level_select',
     TUTORIAL: 'tutorial',
-    GAME_OVER: 'game_over'
+    GAME_OVER: 'game_over',
+    LEVEL_COMPLETE: 'level_complete',
+    PAUSED: 'paused' // New PAUSED state
 };
-
 
 class StateManager {
     constructor(game, inputManager, uiManager) {
@@ -15,6 +16,8 @@ class StateManager {
         this.currentState = GameState.MENU;
         this.menuButtons = [];
         this.menuMusic = null;
+        this.levelCompleteButtons = [];
+        this.pauseButtons = []; // For UIManager to populate
 
         this.setupMenuButtons();
         this.setupMenuAudio();
@@ -22,11 +25,9 @@ class StateManager {
 
     setupMenuAudio() {
         const menuMusicPath = '../assets/Sounds/menubackground.wav';
-
         this.menuMusic = new Audio(menuMusicPath);
         this.menuMusic.loop = true;
         this.menuMusic.volume = 0.3;
-
         this.menuMusic.onerror = () => {
             console.error(`Failed to load menu music from: ${menuMusicPath}`);
             this.menuMusic = null;
@@ -39,7 +40,7 @@ class StateManager {
             const playPromise = this.menuMusic.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
-                    console.log("Menu music started.");
+                    // console.log("Menu music started.");
                 }).catch(error => {
                     console.warn("Menu music autoplay was prevented. User interaction might be needed.", error);
                 });
@@ -50,7 +51,7 @@ class StateManager {
     pauseMenuMusic() {
         if (this.menuMusic && !this.menuMusic.paused) {
             this.menuMusic.pause();
-            console.log("Menu music paused.");
+            // console.log("Menu music paused.");
         }
     }
 
@@ -68,7 +69,7 @@ class StateManager {
                 w: buttonW,
                 h: buttonH,
                 text: 'New Game',
-                action: () => this.startGame(0)
+                action: () => this.startGame(this.game.levels.findIndex(level => level instanceof Tutorial)) // Start with Tutorial
             },
             {
                 x: startX,
@@ -96,27 +97,44 @@ class StateManager {
 
     changeState(newState) {
         if (this.currentState === newState) return;
-
         console.log(`>>> State Changing from ${this.currentState} to ${newState}`);
 
-        if ((this.currentState === GameState.MENU || this.currentState === GameState.LEVEL_SELECT) && newState !== GameState.MENU) {
+        const nonMusicStates = [GameState.PLAYING, GameState.PAUSED];
+        const musicStates = [GameState.MENU, GameState.LEVEL_SELECT, GameState.GAME_OVER, GameState.LEVEL_COMPLETE];
+
+        if (nonMusicStates.includes(this.currentState) && musicStates.includes(newState)) {
+            this.playMenuMusic();
+        } else if (musicStates.includes(this.currentState) && nonMusicStates.includes(newState)) {
             this.pauseMenuMusic();
         }
 
-        if (this.currentState === GameState.PLAYING) {
+
+        if (this.currentState === GameState.PLAYING && newState !== GameState.PAUSED) {
             this.inputManager.exitPointerLock();
         }
+        if (this.currentState === GameState.PAUSED && newState === GameState.PLAYING) {
+            this.inputManager.requestPointerLock();
+        }
+
 
         this.currentState = newState;
 
-        if (this.currentState === GameState.MENU || this.currentState === GameState.LEVEL_SELECT) {
-            this.playMenuMusic();
-        }
-
         if (this.currentState === GameState.PLAYING) {
             this.inputManager.requestPointerLock();
-        } else {
+        } else if (this.currentState !== GameState.PAUSED) { // Don't exit pointer lock if pausing
             this.inputManager.exitPointerLock();
+        }
+
+
+        if (this.currentState === GameState.LEVEL_COMPLETE) {
+            if (this.uiManager) {
+                this.uiManager.setupLevelCompleteButtons(this.game.currentLevelIndex);
+            }
+        } else if (this.currentState === GameState.PAUSED) {
+            if (this.uiManager) {
+                this.uiManager.setupPauseButtons();
+            }
+            this.inputManager.exitPointerLock(); // Ensure pointer lock is exited for pause menu interaction
         }
     }
 
@@ -159,6 +177,15 @@ class StateManager {
     update() {
         const input = this.inputManager.getInputState();
 
+        if (input.keys['Escape']) {
+            if (this.currentState === GameState.PLAYING) {
+                this.changeState(GameState.PAUSED);
+            } else if (this.currentState === GameState.PAUSED) {
+                this.changeState(GameState.PLAYING);
+            }
+            input.keys['Escape'] = false; // Consume the input
+        }
+
         switch (this.currentState) {
             case GameState.MENU:
                 if (input.mouse.clicked && !this.inputManager.mouse.isLocked) {
@@ -176,14 +203,23 @@ class StateManager {
                 break;
             case GameState.PLAYING:
                 if (!this.game.player) {
-                    console.warn("StateManager Update: Player missing in PLAYING state.");
                     this.changeState(GameState.GAME_OVER);
                     return;
                 }
-                this.game.updateCore(input);
+                // Game logic update is handled by game.animate
                 if (!this.game.player && this.currentState === GameState.PLAYING) {
-                    console.log("StateManager Update: Player became null after game.updateCore(), changing state to GAME_OVER.");
                     this.changeState(GameState.GAME_OVER);
+                }
+                break;
+            case GameState.PAUSED:
+                if (input.mouse.clicked && !this.inputManager.mouse.isLocked && this.uiManager) {
+                    for (const button of this.uiManager.pauseButtons) {
+                        if (input.mouse.x >= button.x && input.mouse.x <= button.x + button.w &&
+                            input.mouse.y >= button.y && input.mouse.y <= button.y + button.h) {
+                            button.action();
+                            break;
+                        }
+                    }
                 }
                 break;
             case GameState.LEVEL_SELECT:
@@ -191,7 +227,7 @@ class StateManager {
                     for (const button of this.uiManager.levelSelectButtons) {
                         if (input.mouse.x >= button.x && input.mouse.x <= button.x + button.w &&
                             input.mouse.y >= button.y && input.mouse.y <= button.y + button.h) {
-                            if (this.menuMusic && this.menuMusic.paused && this.currentState === GameState.MENU) {
+                            if (this.menuMusic && this.menuMusic.paused && this.currentState === GameState.MENU) { // This condition seems off, should be for level select
                                 this.playMenuMusic();
                             }
                             if (button.id === 'back_to_menu_from_select' && typeof button.action === 'function') {
@@ -206,9 +242,6 @@ class StateManager {
                 break;
             case GameState.TUTORIAL:
                 if (input.mouse.clicked && !this.inputManager.mouse.isLocked) {
-                    if (this.menuMusic && this.menuMusic.paused && this.currentState === GameState.MENU) {
-                        this.playMenuMusic();
-                    }
                     this.changeState(GameState.MENU);
                 }
                 break;
@@ -224,6 +257,30 @@ class StateManager {
                             }
                             break;
                         }
+                    }
+                }
+                break;
+            case GameState.LEVEL_COMPLETE:
+                if (input.mouse.clicked && !this.inputManager.mouse.isLocked && this.uiManager) {
+                    for (const button of this.uiManager.levelCompleteButtons) {
+                        if (input.mouse.x >= button.x && input.mouse.x <= button.x + button.w &&
+                            input.mouse.y >= button.y && input.mouse.y <= button.y + button.h) {
+                            button.action();
+                            break;
+                        }
+                    }
+                }
+                const level1Index = this.game.levels.findIndex(level => level instanceof Level1);
+                if (this.game.currentLevelIndex === level1Index && this.uiManager.levelCompleteButtons.length === 0) {
+                    const level2Index = this.game.levels.findIndex(level => level instanceof Level2);
+                    if (level2Index !== -1) {
+                        setTimeout(() => {
+                            if (this.currentState === GameState.LEVEL_COMPLETE) { // Check if still in this state
+                                this.startGame(level2Index);
+                            }
+                        }, 1500);
+                    } else {
+                        this.changeState(GameState.MENU);
                     }
                 }
                 break;

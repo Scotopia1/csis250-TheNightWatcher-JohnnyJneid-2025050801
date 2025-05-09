@@ -19,9 +19,17 @@ class Tutorial extends Level {
         const playerStartX = 200;
         const playerStartY = worldH / 2;
         const playerSize = 60;
+
         this.game.addSprite(new Player(this.game, playerStartX, playerStartY, playerSize));
 
         this.game.addSprite(new Wall(this.game, 500, worldH / 2 - 100, 50, 200, wallColor));
+        this.game.addSprite(new Wall(this.game, 500, worldH / 2 + 100, 50, 200, wallColor));
+        this.game.addSprite(new Wall(this.game, 600, worldH / 2 - 100, 50, 200, wallColor));
+        this.game.addSprite(new Wall(this.game, 600, worldH / 2 + 100, 50, 200, wallColor));
+
+        this.game.addSprite(new Enemy(this.game, 700, worldH / 2, 60, 'red', 1.5, 300, 70));
+
+        this.game.addSprite(new Enemy(this.game, 1000, worldH / 2, 60, 'red', 1.5, 300, 70));
 
         this.game.addSprite(new Item(this.game, 700, worldH / 2, 'ammo', 45));
     }

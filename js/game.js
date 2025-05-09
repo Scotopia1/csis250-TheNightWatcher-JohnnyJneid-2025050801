@@ -16,6 +16,7 @@ class Sprite {
 class Level {
     constructor(game) {
         this.game = game;
+        this.initialEnemyCount = 0;
     }
 
     initialize() {
@@ -56,9 +57,10 @@ class Game {
         this.player = null;
 
         this.lastTime = 0;
+        this.activeEnemies = 0;
 
-        this.bindKeyboardEvents();
-        this.bindMouseEvents();
+        this.bindKeyboardEvents(); // Basic listeners, InputManager will handle more advanced state
+        this.bindMouseEvents(); // Basic listeners
 
         console.log("Core Game Engine Initialized (Ready for Manager Refs).");
     }
@@ -76,7 +78,11 @@ class Game {
         if (sprite instanceof Sprite) {
             this._spritesToAdd.push(sprite);
             if (sprite.isProjectile) {
-                console.log(`+++ Projectile QUEUED for addition.`);
+                // console.log(`+++ Projectile QUEUED for addition.`);
+            }
+            if (sprite.isEnemy) {
+                // this.activeEnemies++; // This is now handled more robustly in setLevel
+                // console.log(`Enemy added. Active enemies: ${this.activeEnemies}`);
             }
         } else {
             console.error("Attempted to add non-Sprite object:", sprite);
@@ -87,7 +93,7 @@ class Game {
         if (spriteToRemove) {
             this._spritesToRemove.push(spriteToRemove);
             if (spriteToRemove.isProjectile) {
-                console.log(`+++ Projectile QUEUED for removal.`);
+                // console.log(`+++ Projectile QUEUED for removal.`);
             }
         }
     }
@@ -96,12 +102,19 @@ class Game {
         let playerStillExists = (this.player != null);
 
         for (const sprite of this.sprites) {
-            const shouldRemove = sprite.update(this.sprites, this.keys, inputState.mouse, this);
+            const shouldRemove = sprite.update(this.sprites, inputState.keys, inputState.mouse, this); // Pass full inputState.keys
             if (shouldRemove) {
                 this.removeSprite(sprite);
             }
         }
         if (this._spritesToRemove.length > 0) {
+            this._spritesToRemove.forEach(removedSprite => {
+                if (removedSprite.isEnemy && removedSprite.state === 'dead') {
+                    this.activeEnemies--;
+                    console.log(`Enemy removed. Active enemies: ${this.activeEnemies}`);
+                }
+            });
+
             this.sprites = this.sprites.filter(sprite => {
                 const shouldKeep = !this._spritesToRemove.includes(sprite);
                 if (!shouldKeep && sprite === this.player) {
@@ -137,6 +150,21 @@ class Game {
             if (this.player) playerStillExists = true;
         }
 
+        if (this.stateManager && this.stateManager.currentState === GameState.PLAYING && this.activeEnemies === 0) {
+            const currentLevelObject = this.levels[this.currentLevelIndex];
+            const wasAnyEnemyInLevel = currentLevelObject && currentLevelObject.initialEnemyCount > 0;
+            const isTutorialLevel = currentLevelObject instanceof Tutorial;
+
+
+            if (wasAnyEnemyInLevel) {
+                console.log("All enemies defeated! Level complete.");
+                this.stateManager.changeState(GameState.LEVEL_COMPLETE);
+            } else if (currentLevelObject && currentLevelObject.initialEnemyCount === 0 && isTutorialLevel) {
+                console.log("Tutorial section with no enemies cleared.");
+                this.stateManager.changeState(GameState.LEVEL_COMPLETE);
+            }
+        }
+
         return {playerStillExists};
     }
 
@@ -156,9 +184,11 @@ class Game {
 
         const inputState = this.inputManager.getInputState();
 
-        this.stateManager.update();
+        this.stateManager.update(); // Update state first, handles pause input
 
         let playerStillExists = (this.player != null);
+
+        // Only update game logic if playing
         if (this.stateManager.currentState === GameState.PLAYING) {
             const updateResult = this.updateCore(inputState);
             playerStillExists = updateResult.playerStillExists;
@@ -166,14 +196,14 @@ class Game {
             if (this.player && playerStillExists) {
                 this.camera.update();
             }
-            if (!playerStillExists && this.currentLevelIndex !== -1) {
+            if (!playerStillExists && this.currentLevelIndex !== -1 && this.stateManager.currentState === GameState.PLAYING) {
                 this.stateManager.changeState(GameState.GAME_OVER);
             }
         }
 
         this.renderer.draw(this.stateManager.currentState);
 
-        this.inputManager.reset();
+        this.inputManager.reset(); // Reset click state AFTER all updates for the frame
 
         requestAnimationFrame((ts) => this.animate(ts));
     }
@@ -182,6 +212,7 @@ class Game {
     addLevel(level) {
         if (level instanceof Level && typeof level.initialize === 'function') {
             this.levels.push(level);
+            level.initialEnemyCount = 0;
         } else {
             console.error("Invalid level object added:", level);
         }
@@ -194,9 +225,21 @@ class Game {
             this._spritesToAdd = [];
             this._spritesToRemove = [];
             this.player = null;
+            this.activeEnemies = 0;
             this.currentLevelIndex = index;
+            const currentLevelObject = this.levels[index];
+            currentLevelObject.initialEnemyCount = 0;
+
             try {
-                this.levels[index].initialize();
+                currentLevelObject.initialize();
+
+                let tempEnemyCount = 0;
+                this._spritesToAdd.forEach(s => {
+                    if (s.isEnemy) tempEnemyCount++;
+                });
+                currentLevelObject.initialEnemyCount = tempEnemyCount;
+                console.log(`Level ${index} initialized with ${currentLevelObject.initialEnemyCount} enemies (from _spritesToAdd).`);
+
 
                 if (this._spritesToAdd.length > 0) {
                     this.sprites.push(...this._spritesToAdd);
@@ -213,6 +256,11 @@ class Game {
                     }
                     this._spritesToAdd = [];
                 }
+                // Recalculate activeEnemies from the sprites array directly after initialization
+                this.activeEnemies = this.sprites.filter(s => s.isEnemy && s.state !== 'dead').length;
+                currentLevelObject.initialEnemyCount = this.activeEnemies; // Ensure initialEnemyCount matches actual spawned enemies
+                console.log(`Active enemies after setLevel and processing additions: ${this.activeEnemies}. Initial set to: ${currentLevelObject.initialEnemyCount}`);
+
 
                 return this.player != null;
 
@@ -260,33 +308,33 @@ class Game {
     }
 
     bindKeyboardEvents() {
+        // These are intentionally left basic as InputManager handles the stateful key object
         window.addEventListener('keydown', (e) => {
-            this.keys[e.key] = true;
+            // this.keys[e.key] = true; // InputManager handles this
         });
         window.addEventListener('keyup', (e) => {
-            this.keys[e.key] = false;
+            // this.keys[e.key] = false; // InputManager handles this
         });
     }
     bindMouseEvents() {
         this.canvas.addEventListener("mousemove", (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            this.mouse.x = e.clientX - rect.left;
-            this.mouse.y = e.clientY - rect.top;
+            this.mouse.x = e.clientX - rect.left; // InputManager handles this
+            this.mouse.y = e.clientY - rect.top; // InputManager handles this
         });
         this.canvas.addEventListener("mousedown", (e) => {
-            if (e.target === this.canvas) {
+            if (e.target === this.canvas) { // InputManager handles this
                 this.mouse.down = true;
                 this.mouse.clicked = true;
             }
         });
         this.canvas.addEventListener("mouseup", (e) => {
-            if (e.target === this.canvas) {
+            if (e.target === this.canvas) { // InputManager handles this
                 this.mouse.down = false;
             }
         });
         this.canvas.addEventListener("mouseleave", () => {
-            this.mouse.down = false;
+            this.mouse.down = false; // InputManager handles this
         });
     }
-
 }
