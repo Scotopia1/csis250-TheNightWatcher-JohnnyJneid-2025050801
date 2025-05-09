@@ -46,7 +46,7 @@ class Enemy extends Sprite {
         this.maxPatrolTurnInterval = 480;
         this.patrolTurnTimer = this.getRandomTurnInterval();
         this.randomTurnChance = 0.1;
-        this.scoreAwarded = false; // Flag to track if score has been given for this enemy
+        this.scoreAwarded = false;
 
         this.spriteSheet = new Image();
         this.isSheetLoaded = false;
