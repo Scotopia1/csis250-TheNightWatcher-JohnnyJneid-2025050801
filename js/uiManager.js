@@ -20,8 +20,8 @@ class UIManager {
 
         this.levelSelectButtons = [];
         this.levelCompleteButtons = [];
-        this.levelCompleteMessage = {title: "Level Cleared!", subtitle: ""};
-        this.pauseButtons = []; // Added for pause menu
+        this.levelCompleteMessage = { title: "Level Cleared!", subtitle: "" };
+        this.pauseButtons = [];
 
         console.log("UI Manager initialized.");
     }
@@ -34,14 +34,14 @@ class UIManager {
         const buttonW = 200;
         const buttonH = 50;
         const centerX = this.game.VIEWPORT_WIDTH / 2;
-        const startY = this.game.VIEWPORT_HEIGHT / 2 + 60;
+        const startY = this.game.VIEWPORT_HEIGHT / 2 + 60; // Adjusted Y for score
         const spacing = 70;
 
         this.gameOverButtons = [
-            { x: centerX - buttonW / 2, y: startY, w: buttonW, h: buttonH, text: 'Play Again', id: 'play_again' },
+            { x: centerX - buttonW / 2, y: startY + spacing, w: buttonW, h: buttonH, text: 'Play Again', id: 'play_again' }, // Moved down
             {
                 x: centerX - buttonW / 2,
-                y: startY + spacing,
+                y: startY + spacing * 2, // Moved down
                 w: buttonW,
                 h: buttonH,
                 text: 'Return to Menu',
@@ -99,7 +99,7 @@ class UIManager {
         const buttonW = 220;
         const buttonH = 50;
         const centerX = this.game.VIEWPORT_WIDTH / 2;
-        const startY = this.game.VIEWPORT_HEIGHT / 2 + 40;
+        let startY = this.game.VIEWPORT_HEIGHT / 2 + 60; // Adjusted Y for score
         const spacing = 70;
 
         const tutorialIndex = this.game.levels.findIndex(level => level instanceof Tutorial);
@@ -125,6 +125,7 @@ class UIManager {
             });
         } else if (currentLevelIndex === level1Index) {
             this.levelCompleteMessage.subtitle = "Heading to Level 2...";
+            // No buttons, auto-advance handled by StateManager
         } else if (currentLevelIndex === level2Index) {
             this.levelCompleteMessage.title = "Congratulations!";
             this.levelCompleteMessage.subtitle = "All Levels Cleared!";
@@ -132,7 +133,8 @@ class UIManager {
                 x: centerX - buttonW / 2, y: startY, w: buttonW, h: buttonH, text: 'Main Menu',
                 action: () => this.stateManager.changeState(GameState.MENU)
             });
-        } else {
+        } else { // Default for other levels
+            startY = this.game.VIEWPORT_HEIGHT / 2 + 40; // Readjust if only one button potentially
             this.levelCompleteButtons.push({
                 x: centerX - buttonW / 2, y: startY, w: buttonW, h: buttonH, text: 'Next Level',
                 action: () => this.game.requestNextLevel() ? null : this.stateManager.changeState(GameState.MENU)
@@ -149,15 +151,15 @@ class UIManager {
         const buttonW = 200;
         const buttonH = 50;
         const centerX = this.game.VIEWPORT_WIDTH / 2;
-        const startY = this.game.VIEWPORT_HEIGHT / 2 - buttonH / 2; // Center button vertically
+        const startY = this.game.VIEWPORT_HEIGHT / 2; // Adjusted for score display
         const spacing = 70;
 
         this.pauseButtons.push({
-            x: centerX - buttonW / 2, y: startY - spacing / 2, w: buttonW, h: buttonH, text: 'Resume',
+            x: centerX - buttonW / 2, y: startY + spacing / 2 , w: buttonW, h: buttonH, text: 'Resume',
             action: () => this.stateManager.changeState(GameState.PLAYING)
         });
         this.pauseButtons.push({
-            x: centerX - buttonW / 2, y: startY + spacing / 2 + buttonH, w: buttonW, h: buttonH, text: 'Main Menu',
+            x: centerX - buttonW / 2, y: startY + spacing / 2 + buttonH + 20, w: buttonW, h: buttonH, text: 'Main Menu',
             action: () => {
                 this.stateManager.changeState(GameState.MENU);
             }
@@ -175,8 +177,8 @@ class UIManager {
             case GameState.PLAYING:
                 this.drawPlayingUI();
                 break;
-            case GameState.PAUSED: // Draw playing UI underneath, then pause overlay
-                this.drawPlayingUI();
+            case GameState.PAUSED:
+                this.drawPlayingUI(); // Draw game state underneath
                 this.drawPauseOverlay();
                 break;
             case GameState.LEVEL_SELECT:
@@ -189,11 +191,11 @@ class UIManager {
                 this.drawTutorialScreen();
                 break;
             case GameState.GAME_OVER:
-                this.drawPlayingUI();
+                this.drawPlayingUI(); // Draw final game state underneath
                 this.drawGameOverOverlay();
                 break;
             case GameState.LEVEL_COMPLETE:
-                this.drawPlayingUI();
+                this.drawPlayingUI(); // Draw final game state underneath
                 this.drawLevelCompleteOverlay();
                 break;
         }
@@ -228,7 +230,7 @@ class UIManager {
 
     drawPlayingUI() {
         if (this.player) {
-            this.drawStats(this.ctx, this.player);
+            this.drawStats(this.ctx, this.player); // Will include score
             if (this.game.WORLD_WIDTH > 0 && this.game.WORLD_HEIGHT > 0) {
                 if (this.minimap.scaleX === 0 || this.minimap.scaleY === 0) {
                     this.minimap.scaleX = this.minimap.width / this.game.WORLD_WIDTH;
@@ -256,30 +258,42 @@ class UIManager {
         const uiY = 20;
         const barHeight = 10;
         const barWidth = 100;
-        const spacing = 15;
+        const spacing = 15; // Spacing between stat items
+        const textOffsetY = barHeight / 2;
 
         ctx.font = '12px Arial';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
 
+        // Health
         ctx.fillStyle = 'gray';
         ctx.fillRect(uiX, uiY, barWidth, barHeight);
         ctx.fillStyle = 'red';
         const healthRatio = Math.max(0, player.health / player.maxHealth);
         ctx.fillRect(uiX, uiY, barWidth * healthRatio, barHeight);
         ctx.fillStyle = 'white';
-        ctx.fillText(`HP: ${player.health}/${player.maxHealth}`, uiX + barWidth + 5, uiY + barHeight / 2);
+        ctx.fillText(`HP: ${player.health}/${player.maxHealth}`, uiX + barWidth + 5, uiY + textOffsetY);
 
+        // Shield
+        const shieldY = uiY + spacing;
         ctx.fillStyle = 'gray';
-        ctx.fillRect(uiX, uiY + spacing, barWidth, barHeight);
+        ctx.fillRect(uiX, shieldY, barWidth, barHeight);
         ctx.fillStyle = 'cyan';
         const shieldRatio = Math.max(0, player.shield / player.maxShield);
-        ctx.fillRect(uiX, uiY + spacing, barWidth * shieldRatio, barHeight);
+        ctx.fillRect(uiX, shieldY, barWidth * shieldRatio, barHeight);
         ctx.fillStyle = 'white';
-        ctx.fillText(`SH: ${player.shield}/${player.maxShield}`, uiX + barWidth + 5, uiY + spacing + barHeight / 2);
+        ctx.fillText(`SH: ${player.shield}/${player.maxShield}`, uiX + barWidth + 5, shieldY + textOffsetY);
 
+        // Ammo
+        const ammoY = shieldY + spacing;
         ctx.fillStyle = 'white';
-        ctx.fillText(`Ammo: ${player.ammo}/${player.maxAmmo}`, uiX, uiY + spacing * 2 + barHeight / 2);
+        ctx.fillText(`Ammo: ${player.ammo}/${player.maxAmmo}`, uiX, ammoY + textOffsetY);
+
+        // Score
+        const scoreY = ammoY + spacing;
+        ctx.fillStyle = 'gold'; // Score color
+        ctx.font = '14px Arial'; // Slightly larger for score
+        ctx.fillText(`Score: ${this.game.score}`, uiX, scoreY + textOffsetY);
     }
 
     drawMinimap(ctx) {
@@ -380,7 +394,12 @@ class UIManager {
         this.ctx.font = '50px Arial';
         this.ctx.fillStyle = 'red';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('GAME OVER', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 60);
+        this.ctx.fillText('GAME OVER', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 100); // Adjusted Y
+
+        this.ctx.font = '30px Arial';
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillText(`Final Score: ${this.game.score}`, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 50);
+
 
         this.ctx.font = '24px Arial';
         this.ctx.textAlign = 'center';
@@ -408,18 +427,23 @@ class UIManager {
         this.ctx.font = '50px Arial';
         this.ctx.fillStyle = 'lightgreen';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(this.levelCompleteMessage.title, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 100);
+        this.ctx.fillText(this.levelCompleteMessage.title, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 120); // Adjusted Y
 
         if (this.levelCompleteMessage.subtitle) {
             this.ctx.font = '30px Arial';
             this.ctx.fillStyle = 'white';
-            this.ctx.fillText(this.levelCompleteMessage.subtitle, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 50);
+            this.ctx.fillText(this.levelCompleteMessage.subtitle, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 70); // Adjusted Y
         }
+
+        this.ctx.font = '30px Arial';
+        this.ctx.fillStyle = 'gold';
+        this.ctx.fillText(`Score: ${this.game.score}`, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 20); // Display Score
+
 
         this.ctx.font = '24px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        const mouse = this.game.inputManager ? this.game.inputManager.mouse : {x: -1, y: -1, isLocked: true};
+        const mouse = this.game.inputManager ? this.game.inputManager.mouse : { x: -1, y: -1, isLocked: true };
 
         for (const button of this.levelCompleteButtons) {
             const isHovered = !mouse.isLocked && mouse.x >= button.x && mouse.x <= button.x + button.w &&
@@ -436,20 +460,25 @@ class UIManager {
     }
 
     drawPauseOverlay() {
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; // Semi-transparent black overlay
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         this.ctx.fillRect(0, 0, this.game.VIEWPORT_WIDTH, this.game.VIEWPORT_HEIGHT);
 
         this.ctx.font = '50px Arial';
         this.ctx.fillStyle = 'white';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Paused', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 80);
+        this.ctx.fillText('Paused', this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 100); // Adjusted Y
+
+        this.ctx.font = '30px Arial';
+        this.ctx.fillStyle = 'gold';
+        this.ctx.fillText(`Current Score: ${this.game.score}`, this.game.VIEWPORT_WIDTH / 2, this.game.VIEWPORT_HEIGHT / 2 - 50); // Display Score
+
 
         this.ctx.font = '24px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        const mouse = this.game.inputManager ? this.game.inputManager.mouse : {x: -1, y: -1, isLocked: true};
+        const mouse = this.game.inputManager ? this.game.inputManager.mouse : { x: -1, y: -1, isLocked: true };
 
-        for (const button of this.pauseButtons) { // Use this.pauseButtons
+        for (const button of this.pauseButtons) {
             const isHovered = !mouse.isLocked && mouse.x >= button.x && mouse.x <= button.x + button.w &&
                 mouse.y >= button.y && mouse.y <= button.y + button.h;
 

@@ -58,9 +58,10 @@ class Game {
 
         this.lastTime = 0;
         this.activeEnemies = 0;
+        this.score = 0; // Initialize score
 
-        this.bindKeyboardEvents(); // Basic listeners, InputManager will handle more advanced state
-        this.bindMouseEvents(); // Basic listeners
+        this.bindKeyboardEvents();
+        this.bindMouseEvents();
 
         console.log("Core Game Engine Initialized (Ready for Manager Refs).");
     }
@@ -74,16 +75,14 @@ class Game {
         console.log("Managers linked to Game Engine.");
     }
 
+    addScore(points) {
+        this.score += points;
+        console.log(`Score: ${this.score}`);
+    }
+
     addSprite(sprite) {
         if (sprite instanceof Sprite) {
             this._spritesToAdd.push(sprite);
-            if (sprite.isProjectile) {
-                // console.log(`+++ Projectile QUEUED for addition.`);
-            }
-            if (sprite.isEnemy) {
-                // this.activeEnemies++; // This is now handled more robustly in setLevel
-                // console.log(`Enemy added. Active enemies: ${this.activeEnemies}`);
-            }
         } else {
             console.error("Attempted to add non-Sprite object:", sprite);
         }
@@ -92,9 +91,6 @@ class Game {
     removeSprite(spriteToRemove) {
         if (spriteToRemove) {
             this._spritesToRemove.push(spriteToRemove);
-            if (spriteToRemove.isProjectile) {
-                // console.log(`+++ Projectile QUEUED for removal.`);
-            }
         }
     }
 
@@ -102,7 +98,7 @@ class Game {
         let playerStillExists = (this.player != null);
 
         for (const sprite of this.sprites) {
-            const shouldRemove = sprite.update(this.sprites, inputState.keys, inputState.mouse, this); // Pass full inputState.keys
+            const shouldRemove = sprite.update(this.sprites, inputState.keys, inputState.mouse, this);
             if (shouldRemove) {
                 this.removeSprite(sprite);
             }
@@ -110,6 +106,11 @@ class Game {
         if (this._spritesToRemove.length > 0) {
             this._spritesToRemove.forEach(removedSprite => {
                 if (removedSprite.isEnemy && removedSprite.state === 'dead') {
+                    // Check if score hasn't been awarded for this enemy yet to prevent double scoring if die() is called multiple times
+                    if (!removedSprite.scoreAwarded) {
+                        this.addScore(100); // Award score when enemy is confirmed dead and removed
+                        removedSprite.scoreAwarded = true; // Mark as score awarded
+                    }
                     this.activeEnemies--;
                     console.log(`Enemy removed. Active enemies: ${this.activeEnemies}`);
                 }
@@ -139,7 +140,6 @@ class Game {
                     if (this.uiManager) {
                         this.uiManager.setPlayer(this.player);
                     }
-                    console.log("Player reference set via deferred add.");
                 }
             }
             this._spritesToAdd = [];
@@ -155,12 +155,9 @@ class Game {
             const wasAnyEnemyInLevel = currentLevelObject && currentLevelObject.initialEnemyCount > 0;
             const isTutorialLevel = currentLevelObject instanceof Tutorial;
 
-
             if (wasAnyEnemyInLevel) {
-                console.log("All enemies defeated! Level complete.");
                 this.stateManager.changeState(GameState.LEVEL_COMPLETE);
             } else if (currentLevelObject && currentLevelObject.initialEnemyCount === 0 && isTutorialLevel) {
-                console.log("Tutorial section with no enemies cleared.");
                 this.stateManager.changeState(GameState.LEVEL_COMPLETE);
             }
         }
@@ -172,8 +169,6 @@ class Game {
         for (const sprite of this.sprites) {
             if (typeof sprite.draw === 'function') {
                 sprite.draw(ctx);
-            } else {
-                console.warn("Sprite missing draw method:", sprite);
             }
         }
     }
@@ -181,14 +176,10 @@ class Game {
     animate(timestamp) {
         const deltaTime = (timestamp - this.lastTime) / 1000;
         this.lastTime = timestamp;
-
         const inputState = this.inputManager.getInputState();
-
-        this.stateManager.update(); // Update state first, handles pause input
-
+        this.stateManager.update();
         let playerStillExists = (this.player != null);
 
-        // Only update game logic if playing
         if (this.stateManager.currentState === GameState.PLAYING) {
             const updateResult = this.updateCore(inputState);
             playerStillExists = updateResult.playerStillExists;
@@ -200,14 +191,10 @@ class Game {
                 this.stateManager.changeState(GameState.GAME_OVER);
             }
         }
-
         this.renderer.draw(this.stateManager.currentState);
-
-        this.inputManager.reset(); // Reset click state AFTER all updates for the frame
-
+        this.inputManager.reset();
         requestAnimationFrame((ts) => this.animate(ts));
     }
-
 
     addLevel(level) {
         if (level instanceof Level && typeof level.initialize === 'function') {
@@ -220,26 +207,23 @@ class Game {
 
     setLevel(index) {
         if (index >= 0 && index < this.levels.length) {
-            console.log(`Setting level to index: ${index}`);
             this.sprites = [];
             this._spritesToAdd = [];
             this._spritesToRemove = [];
             this.player = null;
             this.activeEnemies = 0;
+            this.score = 0; // Reset score for the new level
             this.currentLevelIndex = index;
             const currentLevelObject = this.levels[index];
             currentLevelObject.initialEnemyCount = 0;
 
             try {
                 currentLevelObject.initialize();
-
                 let tempEnemyCount = 0;
                 this._spritesToAdd.forEach(s => {
                     if (s.isEnemy) tempEnemyCount++;
                 });
-                currentLevelObject.initialEnemyCount = tempEnemyCount;
-                console.log(`Level ${index} initialized with ${currentLevelObject.initialEnemyCount} enemies (from _spritesToAdd).`);
-
+                // currentLevelObject.initialEnemyCount = tempEnemyCount; // Set before pushing
 
                 if (this._spritesToAdd.length > 0) {
                     this.sprites.push(...this._spritesToAdd);
@@ -251,15 +235,12 @@ class Game {
                         this.camera.y = this.player.y + this.player.height / 2 - this.VIEWPORT_HEIGHT / 2;
                         this.camera.x = Math.max(0, Math.min(this.camera.x, this.WORLD_WIDTH - this.VIEWPORT_WIDTH));
                         this.camera.y = Math.max(0, Math.min(this.camera.y, this.WORLD_HEIGHT - this.VIEWPORT_HEIGHT));
-                    } else {
-                        console.error("Player sprite not found after level initialization!");
                     }
                     this._spritesToAdd = [];
                 }
-                // Recalculate activeEnemies from the sprites array directly after initialization
                 this.activeEnemies = this.sprites.filter(s => s.isEnemy && s.state !== 'dead').length;
-                currentLevelObject.initialEnemyCount = this.activeEnemies; // Ensure initialEnemyCount matches actual spawned enemies
-                console.log(`Active enemies after setLevel and processing additions: ${this.activeEnemies}. Initial set to: ${currentLevelObject.initialEnemyCount}`);
+                currentLevelObject.initialEnemyCount = this.activeEnemies;
+                console.log(`Level ${index} initialized with ${currentLevelObject.initialEnemyCount} enemies. Active: ${this.activeEnemies}`);
 
 
                 return this.player != null;
@@ -277,8 +258,6 @@ class Game {
     requestLevelChange(index) {
         if (index >= 0 && index < this.levels.length) {
             this.pendingLevelIndex = index;
-        } else {
-            console.warn(`Requested invalid level index: ${index}`);
         }
     }
 
@@ -289,7 +268,6 @@ class Game {
             else this.requestLevelChange(nextIndex);
             return true;
         } else {
-            console.log("No next level available.");
             if (this.stateManager) this.stateManager.changeState(GameState.MENU);
             return false;
         }
@@ -302,7 +280,6 @@ class Game {
             else this.requestLevelChange(prevIndex);
             return true;
         } else {
-            console.log("No previous level available.");
             return false;
         }
     }
